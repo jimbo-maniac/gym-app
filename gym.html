@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gym">
+<title>Gym</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0a;
+  --bg2: #141414;
+  --bg3: #1e1e1e;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #f0f0f0;
+  --muted: #666;
+  --muted2: #888;
+  --accent: #c8f060;
+  --accent2: #a8d040;
+  --warn: #f0a040;
+  --phy: #60c8a0;
+  --red: #f06060;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+  --r: 12px;
+  --rb: 20px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); overflow: hidden; }
+
+/* SCREENS */
+.screen { display: none; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
+.screen.active { display: flex; }
+
+/* HOME */
+#home { padding: 0; }
+.home-header { padding: 52px 24px 20px; }
+.home-header .greeting { font-size: 12px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+.home-header h1 { font-size: 32px; font-weight: 300; letter-spacing: -0.03em; line-height: 1.1; }
+.home-header h1 span { color: var(--accent); }
+.day-strip { padding: 0 24px 20px; display: flex; gap: 8px; }
+.day-chip { flex: 1; padding: 10px 4px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); text-align: center; cursor: pointer; transition: all 0.15s; }
+.day-chip .dc-label { font-size: 10px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.05em; margin-bottom: 4px; }
+.day-chip .dc-val { font-size: 14px; font-weight: 500; color: var(--muted2); }
+.day-chip.a .dc-val { color: var(--accent); }
+.day-chip.b .dc-val { color: #60b0f0; }
+.day-chip.c .dc-val { color: #c080f0; }
+.day-chip.d .dc-val { color: var(--warn); }
+.day-chip.today { border-color: var(--border2); background: var(--bg3); }
+
+.session-cards { flex: 1; overflow-y: auto; padding: 0 24px 120px; -webkit-overflow-scrolling: touch; }
+.scard { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--rb); padding: 20px; margin-bottom: 12px; cursor: pointer; transition: all 0.15s; active: transform scale(0.98); }
+.scard:active { transform: scale(0.985); background: var(--bg3); }
+.scard-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.scard-letter { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 18px; font-weight: 500; }
+.scard.a .scard-letter { background: rgba(200,240,96,0.12); color: var(--accent); }
+.scard.b .scard-letter { background: rgba(96,176,240,0.12); color: #60b0f0; }
+.scard.c .scard-letter { background: rgba(192,128,240,0.12); color: #c080f0; }
+.scard.d .scard-letter { background: rgba(240,160,64,0.12); color: var(--warn); }
+.scard-arrow { color: var(--muted); font-size: 18px; margin-top: 2px; }
+.scard-name { font-size: 18px; font-weight: 400; letter-spacing: -0.02em; margin-bottom: 3px; }
+.scard-sub { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+.scard-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill { font-size: 10px; padding: 3px 8px; border-radius: 20px; font-family: var(--mono); }
+.pill-green { background: rgba(200,240,96,0.1); color: var(--accent2); }
+.pill-blue { background: rgba(96,176,240,0.1); color: #60b0f0; }
+.pill-phy { background: rgba(96,200,160,0.1); color: var(--phy); }
+
+/* SESSION SCREEN */
+#session { background: var(--bg); }
+.sess-header { padding: 52px 24px 16px; display: flex; align-items: flex-start; gap: 16px; }
+.back-btn { width: 36px; height: 36px; border-radius: 10px; background: var(--bg2); border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-top: 2px; color: var(--text); font-size: 16px; }
+.sess-title-wrap { flex: 1; }
+.sess-label { font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+.sess-title { font-size: 24px; font-weight: 300; letter-spacing: -0.03em; }
+
+.warmup-bar { margin: 0 24px 16px; background: rgba(96,200,160,0.08); border: 0.5px solid rgba(96,200,160,0.2); border-radius: var(--r); padding: 12px 14px; }
+.wu-label { font-size: 10px; font-family: var(--mono); color: var(--phy); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+.wu-text { font-size: 12px; color: var(--muted2); line-height: 1.6; }
+
+.ex-list { flex: 1; overflow-y: auto; padding: 0 24px 120px; -webkit-overflow-scrolling: touch; }
+
+.ex-item { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--rb); margin-bottom: 10px; overflow: hidden; }
+.ex-item.done { opacity: 0.45; }
+.ex-header-row { display: flex; align-items: center; padding: 16px; gap: 12px; cursor: pointer; }
+.ex-check { width: 24px; height: 24px; border-radius: 7px; border: 1.5px solid var(--border2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.ex-item.done .ex-check { background: var(--accent); border-color: var(--accent); }
+.check-icon { display: none; font-size: 12px; color: #000; }
+.ex-item.done .check-icon { display: block; }
+.ex-info { flex: 1; }
+.ex-nm { font-size: 15px; font-weight: 400; letter-spacing: -0.01em; margin-bottom: 2px; }
+.ex-sets-label { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+.ex-expand { color: var(--muted); font-size: 13px; transition: transform 0.2s; }
+.ex-item.open .ex-expand { transform: rotate(180deg); }
+
+.ex-body { display: none; padding: 0 16px 16px; border-top: 0.5px solid var(--border); }
+.ex-item.open .ex-body { display: block; }
+.cue-box { margin-top: 12px; padding: 12px; background: var(--bg3); border-radius: var(--r); }
+.cue-label { font-size: 10px; font-family: var(--mono); color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+.cue-text { font-size: 12px; color: var(--muted2); line-height: 1.65; }
+.cue-text strong { color: var(--accent); font-weight: 500; }
+.tag-phy-sm { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 20px; background: rgba(96,200,160,0.1); color: var(--phy); font-family: var(--mono); margin-bottom: 8px; }
+
+.weight-row { margin-top: 12px; display: flex; align-items: center; gap: 10px; }
+.weight-label { font-size: 11px; color: var(--muted); font-family: var(--mono); flex-shrink: 0; }
+.weight-input { flex: 1; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: var(--mono); font-size: 14px; outline: none; }
+.weight-input:focus { border-color: var(--accent); }
+.weight-unit { font-size: 11px; color: var(--muted); font-family: var(--mono); flex-shrink: 0; }
+
+.sets-tracker { margin-top: 12px; }
+.sets-tracker-label { font-size: 10px; font-family: var(--mono); color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+.sets-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.set-btn { width: 44px; height: 44px; border-radius: 10px; border: 1.5px solid var(--border2); background: transparent; color: var(--muted2); font-family: var(--mono); font-size: 13px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+.set-btn.done { background: rgba(200,240,96,0.15); border-color: var(--accent); color: var(--accent); }
+.set-btn:active { transform: scale(0.92); }
+
+/* BOTTOM NAV */
+.bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; padding: 12px 24px 32px; background: linear-gradient(to top, var(--bg) 60%, transparent); pointer-events: none; }
+.complete-btn { width: 100%; padding: 16px; background: var(--accent); color: #000; border: none; border-radius: var(--rb); font-family: var(--sans); font-size: 15px; font-weight: 500; cursor: pointer; pointer-events: all; transition: all 0.15s; letter-spacing: -0.01em; }
+.complete-btn:active { transform: scale(0.97); background: var(--accent2); }
+.complete-btn.secondary { background: var(--bg2); color: var(--muted2); border: 0.5px solid var(--border); }
+
+/* DONE SCREEN */
+#done { align-items: center; justify-content: center; text-align: center; padding: 40px; }
+.done-icon { font-size: 56px; margin-bottom: 24px; }
+.done-title { font-size: 28px; font-weight: 300; letter-spacing: -0.03em; margin-bottom: 8px; }
+.done-sub { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 40px; }
+.done-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-bottom: 32px; }
+.stat-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); padding: 16px; }
+.stat-val { font-size: 24px; font-weight: 300; font-family: var(--mono); color: var(--accent); margin-bottom: 4px; }
+.stat-label { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+/* HISTORY dot */
+.hist-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; margin-left: 6px; vertical-align: middle; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 0; }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home" class="screen active">
+  <div class="home-header">
+    <div class="greeting">Klaar om te knallen?</div>
+    <h1>Kies je<br><span>sessie</span></h1>
+  </div>
+  <div class="day-strip" id="day-strip"></div>
+  <div class="session-cards">
+    <div class="scard a" onclick="openSession('a')">
+      <div class="scard-top">
+        <div class="scard-letter">A</div>
+        <div class="scard-arrow">›</div>
+      </div>
+      <div class="scard-name">Push</div>
+      <div class="scard-sub" style="margin-bottom:10px">Borst · Schouders · Triceps · ~45 min</div>
+      <div class="scard-pills">
+        <span class="pill pill-green">Incline barbell</span>
+        <span class="pill pill-green">DB press</span>
+        <span class="pill pill-phy">Face pulls</span>
+        <span class="pill pill-phy">Chest fly</span>
+      </div>
+    </div>
+    <div class="scard b" onclick="openSession('b')">
+      <div class="scard-top">
+        <div class="scard-letter">B</div>
+        <div class="scard-arrow">›</div>
+      </div>
+      <div class="scard-name">Pull</div>
+      <div class="scard-sub" style="margin-bottom:10px">Rug · Biceps · Rear delts · ~45 min</div>
+      <div class="scard-pills">
+        <span class="pill pill-blue">Barbell row</span>
+        <span class="pill pill-blue">Lat pulldown</span>
+        <span class="pill pill-blue">Cable row</span>
+        <span class="pill pill-phy">Face pulls</span>
+      </div>
+    </div>
+    <div class="scard c" onclick="openSession('c')">
+      <div class="scard-top">
+        <div class="scard-letter">C</div>
+        <div class="scard-arrow">›</div>
+      </div>
+      <div class="scard-name">Legs</div>
+      <div class="scard-sub" style="margin-bottom:10px">Benen · Glutes · Core · ~45 min</div>
+      <div class="scard-pills">
+        <span class="pill" style="background:rgba(192,128,240,0.1);color:#c080f0">Squat</span>
+        <span class="pill" style="background:rgba(192,128,240,0.1);color:#c080f0">RDL</span>
+        <span class="pill" style="background:rgba(192,128,240,0.1);color:#c080f0">Hip thrust</span>
+        <span class="pill" style="background:rgba(192,128,240,0.1);color:#c080f0">Split squat</span>
+      </div>
+    </div>
+    <div class="scard d" onclick="openSession('d')">
+      <div class="scard-top">
+        <div class="scard-letter">D</div>
+        <div class="scard-arrow">›</div>
+      </div>
+      <div class="scard-name">Full body</div>
+      <div class="scard-sub" style="margin-bottom:10px">Deadlift focus · 4e dag · ~45 min</div>
+      <div class="scard-pills">
+        <span class="pill" style="background:rgba(240,160,64,0.1);color:var(--warn)">Deadlift</span>
+        <span class="pill" style="background:rgba(240,160,64,0.1);color:var(--warn)">Incline DB</span>
+        <span class="pill pill-phy">KB press</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SESSION -->
+<div id="session" class="screen">
+  <div class="sess-header">
+    <div class="back-btn" onclick="goHome()">‹</div>
+    <div class="sess-title-wrap">
+      <div class="sess-label" id="sess-label">Sessie A</div>
+      <div class="sess-title" id="sess-title">Push</div>
+    </div>
+  </div>
+  <div class="warmup-bar">
+    <div class="wu-label">Warm-up — 5 min</div>
+    <div class="wu-text" id="wu-text"></div>
+  </div>
+  <div class="ex-list" id="ex-list"></div>
+  <div class="bottom-bar">
+    <button class="complete-btn" id="done-btn" onclick="finishSession()">Sessie afronden</button>
+  </div>
+</div>
+
+<!-- DONE -->
+<div id="done" class="screen">
+  <div class="done-icon">💪</div>
+  <div class="done-title">Sessie klaar.</div>
+  <div class="done-sub" id="done-msg">Goed werk. Schouders omlaag gehouden?</div>
+  <div class="done-stats">
+    <div class="stat-card">
+      <div class="stat-val" id="stat-oef">0</div>
+      <div class="stat-label">oefeningen</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-sets">0</div>
+      <div class="stat-label">sets gedaan</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-sess">0</div>
+      <div class="stat-label">sessies totaal</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-week">0</div>
+      <div class="stat-label">deze week</div>
+    </div>
+  </div>
+  <button class="complete-btn" onclick="goHome()" style="max-width:100%;width:100%">Terug naar home</button>
+</div>
+
+<script>
+const SESSIONS = {
+  a: {
+    name: 'Push', sub: 'Borst · Schouders · Triceps',
+    wu: 'Wall rotation 15 reps × 2 per kant → Single arm KB press 4 kg × 10 × 1 per kant (schouder activatie, schouder omlaag houden)',
+    exercises: [
+      { id:'a1', name:'Incline barbell press', vol:'4 × 5–6', startkg:'40 kg', prio:true,
+        cue:'Incline ~30°. <strong>Vóór elke set: schouderbladen in de bank, omlaag.</strong> Chin tuck. Explosief omhoog, gecontroleerd terug. Je hoofdoefening — bouw hier als eerste op.', sets:4 },
+      { id:'a2', name:'Flat DB press', vol:'3 × 10–12', startkg:'12 kg/DB',
+        cue:'Ellebogen op ~75°, niet volledig uitgespreid. Focus op borst squeeze aan het eind. Schouders niet optrekken.', sets:3 },
+      { id:'a3', name:'Cable chest fly (of DB fly)', vol:'3 × 12', startkg:'6–8 kg', phy:true,
+        cue:'Grote stretch in borst. <strong>Chin tuck + schouders actief omlaag.</strong> Ellebogen licht gebogen. Schouderbladen naar elkaar toe bij sluiten. Dit is de physio chest fly — als krachtoefening.', sets:3 },
+      { id:'a4', name:'Seated face pulls', vol:'3 × 12–15', startkg:'12.5–17.5 kg', phy:true,
+        cue:'<strong>Altijd op push dag. Nooit overslaan.</strong> Trek naar oorniveau. Schouders omlaag + naar elkaar toe. Corrigeert het patroon dat je schouders omhoog trekt.', sets:3 },
+      { id:'a5', name:'Lateral raise', vol:'3 × 15', startkg:'5–7 kg',
+        cue:'Licht voorover geleund. <strong>Schouder initiëert — niet het polsgewricht.</strong> Stop op schouderhoogte. Licht gewicht, hoog volume.', sets:3 },
+      { id:'a6', name:'Tricep pushdown (kabel)', vol:'2 × 15', startkg:'licht',
+        cue:'Ellebogen gefixeerd naast lichaam. Full range. Sluit de sessie compact af.', sets:2 },
+    ]
+  },
+  b: {
+    name: 'Pull', sub: 'Rug · Biceps · Rear delts',
+    wu: 'Wall rotation 15 reps × 2 per kant → Band pull-apart of light face pull × 15 (activatie rear delt)',
+    exercises: [
+      { id:'b1', name:'Barbell row (overhand)', vol:'4 × 6', startkg:'50–60 kg', prio:true,
+        cue:'45° torso. Stang naar navel, niet borst. <strong>Schouderbladen squeezen aan het eind</strong> — schouders niet optrekken in de beweging. Explosief trekken, gecontroleerd terug.', sets:4 },
+      { id:'b2', name:'Lat pulldown', vol:'3 × 10–12', startkg:'40–45 kg',
+        cue:'Licht achteroverleunen. <strong>Initiëer met schouderbladen omlaag</strong> — dan pas armen. Trek naar borst. Mentale cue: "ellebogen naar de vloer duwen".', sets:3 },
+      { id:'b3', name:'Seated cable row', vol:'3 × 12', startkg:'medium',
+        cue:'Borst omhoog. Niet naar achteren hellen. Squeeze mid-rug volledig uit. Pauze 1 sec aan het eind.', sets:3 },
+      { id:'b4', name:'Single arm DB row', vol:'3 × 10 per kant', startkg:'20–25 kg',
+        cue:'Knie + hand op bank. Trek elleboog achter je langs omhoog. Geen rotatie in de romp.', sets:3 },
+      { id:'b5', name:'Face pulls (kabel)', vol:'2 × 15', startkg:'licht', phy:true,
+        cue:'Rear delt isolatie + schouder herstel. Schouders omlaag houden tijdens de beweging.', sets:2 },
+      { id:'b6', name:'Barbell curl', vol:'3 × 12', startkg:'20–25 kg',
+        cue:'Ellebogen gefixeerd. Full range. Geen swingen. Supineer de pols bovenin.', sets:3 },
+    ]
+  },
+  c: {
+    name: 'Legs', sub: 'Benen · Glutes · Core',
+    wu: 'Wall rotation 15 × 2 per kant → Goblet squat bodyweight × 10 (heupmobiliteit)',
+    exercises: [
+      { id:'c1', name:'Barbell squat', vol:'4 × 5', startkg:'60–70 kg', prio:true,
+        cue:'Borst omhoog, blik recht vooruit. Dalen tot parallel of dieper. <strong>Explosief omhoog</strong> — dit traint atletisch vermogen. Bouw 2.5 kg per sessie op.', sets:4 },
+      { id:'c2', name:'Romanian deadlift (RDL)', vol:'3 × 8', startkg:'70–80 kg',
+        cue:'Stang dicht langs benen. Hips back, niet omlaag. <strong>Schouderbladen ingeklemd</strong> — rug recht. Stop bij hamstring spanning, niet bij de vloer.', sets:3 },
+      { id:'c3', name:'Hip thrust (Technogym)', vol:'3 × 12', startkg:'jouw gewicht',
+        cue:'Squeeze glute maximaal bovenin. Geen hyperextensie lage rug. Bekken kantelt posterior. Pauze 1 sec bovenin.', sets:3 },
+      { id:'c4', name:'Bulgarian split squat', vol:'3 × 8 per been', startkg:'bodyweight → DB',
+        cue:'Voorste voet ver genoeg naar voren. Knie volgt over voet. Start zonder gewicht, bouw op met DB\'s. Traint stabiliteit en balans.', sets:3 },
+      { id:'c5', name:'Ab wheel rollout', vol:'3 × 10', startkg:'eigen gewicht',
+        cue:'Lage rug in contact met grond houden. Langzaam en gecontroleerd. Alternatief: dead bug als ab wheel er niet is.', sets:3 },
+    ]
+  },
+  d: {
+    name: 'Full body', sub: 'Deadlift focus · 4e dag',
+    wu: 'Wall rotation 15 × 2 → KB single arm press 10 × 1 per kant',
+    exercises: [
+      { id:'d1', name:'Conventional deadlift', vol:'4 × 4–5', startkg:'80–100 kg', prio:true,
+        cue:'Hips in, rug recht, lat aangespannen vóór je trekt. <strong>Schouderbladen naar beneden en achteren</strong> — niet optrekken. Meest atletische oefening die bestaat.', sets:4 },
+      { id:'d2', name:'Incline DB press', vol:'3 × 10', startkg:'12–14 kg/DB',
+        cue:'Tweede borst sessie van de week — noodzakelijk voor een zwakke borst. Zelfde cues als sessie A: schouders omlaag, chin tuck.', sets:3 },
+      { id:'d3', name:'Lat pulldown (close grip)', vol:'3 × 12', startkg:'35–40 kg',
+        cue:'Iets lichter dan sessie B. Meer focus op mind-muscle connection. Close grip activeert bicep meer mee.', sets:3 },
+      { id:'d4', name:'Single arm KB overhead press', vol:'3 × 10 per kant', startkg:'4–8 kg', phy:true,
+        cue:'<strong>Open borst eerst, dan persten omhoog terwijl schouder actief omlaag blijft.</strong> Dit is de physio KB press progressief opgebouwd: 4 → 6 → 8 kg. Traint schouderstabiliteit zonder risico.', sets:3 },
+      { id:'d5', name:'Cable crunch', vol:'3 × 15', startkg:'licht-medium',
+        cue:'Handen achter nek, krul omlaag vanuit de buik — niet de heupen. Voeg gewicht toe zodra 15 reps te makkelijk is.', sets:3 },
+    ]
+  }
+};
+
+const DAYS = ['zo','ma','di','wo','do','vr','za'];
+const SCHEDULE_3 = ['A','—','B','—','C','—','—'];
+const SCHEDULE_4 = ['A','C','—','B','D','—','—'];
+
+let currentSession = null;
+let sessionData = {};
+let startTime = null;
+
+function initDayStrip() {
+  const strip = document.getElementById('day-strip');
+  const today = new Date().getDay();
+  strip.innerHTML = DAYS.map((d,i) => {
+    const s3 = SCHEDULE_3[i];
+    const cls = s3 === '—' ? 'r' : s3.toLowerCase();
+    const isToday = i === today;
+    return `<div class="day-chip ${cls} ${isToday ? 'today' : ''}">
+      <div class="dc-label">${d}</div>
+      <div class="dc-val">${s3}</div>
+    </div>`;
+  }).join('');
+}
+
+function openSession(key) {
+  currentSession = key;
+  const s = SESSIONS[key];
+  sessionData = {};
+  startTime = Date.now();
+
+  document.getElementById('sess-label').textContent = 'Sessie ' + key.toUpperCase();
+  document.getElementById('sess-title').textContent = s.name + ' — ' + s.sub;
+  document.getElementById('wu-text').textContent = s.wu;
+
+  const list = document.getElementById('ex-list');
+  list.innerHTML = s.exercises.map((ex, idx) => {
+    const sets = [];
+    for(let i=1;i<=ex.sets;i++) sets.push(`<button class="set-btn" id="set-${ex.id}-${i}" onclick="toggleSet('${ex.id}',${i},${ex.sets})">${i}</button>`);
+    return `
+    <div class="ex-item" id="exitem-${ex.id}">
+      <div class="ex-header-row" onclick="toggleEx('${ex.id}')">
+        <div class="ex-check" onclick="event.stopPropagation();toggleDone('${ex.id}')"><span class="check-icon">✓</span></div>
+        <div class="ex-info">
+          <div class="ex-nm">${ex.name}</div>
+          <div class="ex-sets-label">${ex.vol} · start ${ex.startkg}</div>
+        </div>
+        <div class="ex-expand">∨</div>
+      </div>
+      <div class="ex-body">
+        ${ex.phy ? '<span class="tag-phy-sm">physio geïntegreerd</span>' : ''}
+        <div class="cue-box">
+          <div class="cue-label">Coaching cue</div>
+          <div class="cue-text">${ex.cue}</div>
+        </div>
+        <div class="weight-row">
+          <span class="weight-label">Gewicht vandaag</span>
+          <input class="weight-input" type="number" inputmode="decimal" placeholder="${ex.startkg}" id="w-${ex.id}" onchange="saveWeight('${ex.id}',this.value)">
+          <span class="weight-unit">kg</span>
+        </div>
+        <div class="sets-tracker">
+          <div class="sets-tracker-label">Sets afvinken</div>
+          <div class="sets-row">${sets.join('')}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Load saved weights
+  s.exercises.forEach(ex => {
+    const saved = localStorage.getItem('w-' + ex.id);
+    if(saved) {
+      const inp = document.getElementById('w-' + ex.id);
+      if(inp) inp.placeholder = saved + ' kg';
+    }
+  });
+
+  show('session');
+}
+
+function toggleEx(id) {
+  const item = document.getElementById('exitem-' + id);
+  item.classList.toggle('open');
+}
+
+function toggleDone(id) {
+  const item = document.getElementById('exitem-' + id);
+  item.classList.toggle('done');
+  if(item.classList.contains('open')) item.classList.remove('open');
+}
+
+function toggleSet(exId, setNum, total) {
+  const btn = document.getElementById(`set-${exId}-${setNum}`);
+  btn.classList.toggle('done');
+  sessionData[`${exId}-${setNum}`] = btn.classList.contains('done');
+}
+
+function saveWeight(id, val) {
+  if(val) localStorage.setItem('w-' + id, val);
+}
+
+function finishSession() {
+  const s = SESSIONS[currentSession];
+  const totalSets = Object.values(sessionData).filter(Boolean).length;
+  const totalEx = s.exercises.length;
+
+  // Save to history
+  const history = JSON.parse(localStorage.getItem('gym-history') || '[]');
+  history.push({ date: new Date().toISOString(), session: currentSession, sets: totalSets });
+  localStorage.setItem('gym-history', JSON.stringify(history));
+
+  // This week
+  const now = new Date();
+  const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay());
+  const thisWeek = history.filter(h => new Date(h.date) >= weekStart).length;
+
+  document.getElementById('stat-oef').textContent = totalEx;
+  document.getElementById('stat-sets').textContent = totalSets;
+  document.getElementById('stat-sess').textContent = history.length;
+  document.getElementById('stat-week').textContent = thisWeek;
+
+  const msgs = [
+    'Schouders omlaag gehouden? Goed werk.',
+    'Gewichten opgeslagen. Volgende keer zwaarder.',
+    'Wall rotation vanavond nog even doen.',
+    'Consistentie wint altijd. Morgen weer.',
+  ];
+  document.getElementById('done-msg').textContent = msgs[Math.floor(Math.random()*msgs.length)];
+
+  show('done');
+}
+
+function goHome() {
+  show('home');
+  initDayStrip();
+}
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+initDayStrip();
+</script>
+</body>
+</html>
